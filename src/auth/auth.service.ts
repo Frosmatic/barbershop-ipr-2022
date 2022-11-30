@@ -1,31 +1,29 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as argon from 'argon2';
-import { PrismaService } from '../prisma/prisma.service';
 import { AuthDto } from './dto';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from '../user/user.service';
+import { Role } from '../constants';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private jwt: JwtService,
+    private config: ConfigService,
+    private userService: UserService,
+  ) {}
 
   async signin(dto: AuthDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.userService.getUserByEmail(dto.email);
 
-    if (!user) throw new NotFoundException('Credential incorrect');
+    if (!user) throw new BadRequestException('Credential incorrect');
 
     const isPasswordMatch = await argon.verify(user.hash, dto.password);
 
-    if (!isPasswordMatch) throw new BadRequestException('Credential incorrect')
+    if (!isPasswordMatch) throw new BadRequestException('Credential incorrect');
 
-    delete user.hash;
-
-    return user;
+    return await this.signToken(user.id, user.email, user.roles);
   }
 
   async signup(dto: AuthDto) {
@@ -34,22 +32,32 @@ export class AuthService {
     const hash = await argon.hash(dto.password);
 
     try {
-      createdUser = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          hash,
-        },
-      });
+      createdUser = await this.userService.createUser(dto.email, hash);
     } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw new BadRequestException('Email already taken');
-      }
-
       throw e;
     }
 
-    delete createdUser.hash;
+    return await this.signToken(
+      createdUser.id,
+      createdUser.email,
+      createdUser.roles,
+    );
+  }
 
-    return createdUser;
+  async signToken(userId: string, email: string, roles: Role[]) {
+    const payload = {
+      sub: userId,
+      email,
+      roles,
+    };
+
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: this.config.get('JWT_SECRET'),
+    });
+
+    return {
+      access_token: token,
+    };
   }
 }

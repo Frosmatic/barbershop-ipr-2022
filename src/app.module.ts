@@ -1,17 +1,28 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { BookmarkModule } from './bookmark/bookmark.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { PerformerModule } from './performer/performer.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
     AuthModule,
     UserModule,
-    BookmarkModule,
-    PrismaModule,
     ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get('MONGO_URI'),
+      }),
+    }),
+    PerformerModule,
+    AppointmentModule,
+    CacheModule.register({
       isGlobal: true,
     }),
   ],
