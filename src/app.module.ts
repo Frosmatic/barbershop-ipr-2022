@@ -5,6 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PerformerModule } from './performer/performer.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { ActivityModule } from './activity/activity.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
@@ -18,6 +21,8 @@ import { AppointmentModule } from './appointment/appointment.module';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get('MONGO_URI'),
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
       }),
     }),
     PerformerModule,
@@ -25,6 +30,9 @@ import { AppointmentModule } from './appointment/appointment.module';
     CacheModule.register({
       isGlobal: true,
     }),
+    ActivityModule,
+    ScheduleModule.forRoot(),
+    CronModule,
   ],
 })
 export class AppModule {}

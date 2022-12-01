@@ -21,4 +21,8 @@ export class PerformerService {
   ): Promise<Performer> {
     return this.performerRepository.findOneAndUpdate({ id }, payload);
   }
+
+  async getPerformerById(id: string): Promise<Performer> {
+    return this.performerRepository.findOne({ id });
+  }
 }

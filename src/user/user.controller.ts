@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   CacheInterceptor,
   Controller,
@@ -12,9 +13,8 @@ import {
 import { JwtGuard } from '../auth/guard';
 import { HasRoles } from '../auth/decorator';
 import { Role } from '../constants';
-import { RolesGuard } from '../auth/guard/roles.guard';
+import { RolesGuard } from '../auth/guard';
 import { UserService } from './user.service';
-import * as argon from 'argon2';
 import { AuthDto } from '../auth/dto';
 import {
   ApiBearerAuth,
@@ -42,8 +42,13 @@ export class UserController {
   @Post('')
   @ApiCreatedResponse({ type: User })
   async create(@Body() dto: AuthDto) {
-    const hash = await argon.hash(dto.password);
-    return this.userService.createUser(dto.email, hash);
+    const existUser = await this.userService.getUserByEmail(dto.email);
+
+    if (existUser) {
+      throw new BadRequestException('User already exists');
+    }
+
+    return this.userService.createUser(dto.email, dto.password);
   }
 
   @Put(':id')

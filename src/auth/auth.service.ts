@@ -29,10 +29,8 @@ export class AuthService {
   async signup(dto: AuthDto) {
     let createdUser;
 
-    const hash = await argon.hash(dto.password);
-
     try {
-      createdUser = await this.userService.createUser(dto.email, hash);
+      createdUser = await this.userService.createUser(dto.email, dto.password);
     } catch (e) {
       throw e;
     }

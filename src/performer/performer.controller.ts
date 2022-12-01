@@ -4,7 +4,7 @@ import { CreatePerformerDto } from './dto';
 import { JwtGuard } from '../auth/guard';
 import { HasRoles } from '../auth/decorator';
 import { Role } from '../constants';
-import { RolesGuard } from '../auth/guard/roles.guard';
+import { RolesGuard } from '../auth/guard';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,

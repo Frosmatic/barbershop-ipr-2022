@@ -7,29 +7,25 @@ import { FilterQuery, Model } from 'mongoose';
 export class AppointmentRepository {
   constructor(
     @InjectModel(Appointment.name)
-    private performerModel: Model<AppointmentDocument>,
+    private appointmentModel: Model<AppointmentDocument>,
   ) {}
 
-  async findOne(
-    userFilterQuery: FilterQuery<Appointment>,
-  ): Promise<Appointment> {
-    return this.performerModel.findOne(userFilterQuery);
+  async findOne(filterQuery: FilterQuery<Appointment>): Promise<Appointment> {
+    return this.appointmentModel.findOne(filterQuery);
   }
 
-  async find(
-    userFilterQuery: FilterQuery<Appointment>,
-  ): Promise<Appointment[]> {
-    return this.performerModel.find(userFilterQuery);
+  async find(filterQuery: FilterQuery<Appointment>): Promise<Appointment[]> {
+    return this.appointmentModel.find(filterQuery);
   }
 
-  async create(performer: Appointment): Promise<Appointment> {
-    return this.performerModel.create(performer);
+  async create(appointment: Appointment): Promise<Appointment> {
+    return this.appointmentModel.create(appointment);
   }
 
   async findOneAndUpdate(
-    userFilterQuery: FilterQuery<Appointment>,
-    user: Partial<Appointment>,
+    filterQuery: FilterQuery<Appointment>,
+    appointment: Partial<Appointment>,
   ): Promise<Appointment> {
-    return this.performerModel.findOneAndUpdate(userFilterQuery, user);
+    return this.appointmentModel.findOneAndUpdate(filterQuery, appointment);
   }
 }

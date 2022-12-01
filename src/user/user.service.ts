@@ -3,6 +3,7 @@ import { UserRepository } from './user.repository';
 import { User } from './schemas';
 import { randomUUID } from 'crypto';
 import { Role } from '../constants';
+import * as argon from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -20,11 +21,13 @@ export class UserService {
     return this.userRepository.find({});
   }
 
-  async createUser(email: string, hash: string): Promise<User> {
+  async createUser(email: string, password: string): Promise<User> {
+    const hash = await argon.hash(password);
+
     return this.userRepository.create({
       email,
       hash,
-      roles: [Role.Admin],
+      roles: [Role.User],
       id: randomUUID(),
     });
   }
