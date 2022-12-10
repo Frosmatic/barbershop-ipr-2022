@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { PerformerService } from './performer.service';
 import { CreatePerformerDto } from './dto';
 import { JwtGuard } from '../auth/guard';
@@ -24,6 +32,14 @@ export class PerformerController {
   @Post('')
   @ApiCreatedResponse({ type: Performer })
   create(@Body() dto: CreatePerformerDto) {
+    const existingPerformer = this.performerService.getPerformerByEmail(
+      dto.email,
+    );
+
+    if (existingPerformer) {
+      throw new BadRequestException('Performer already exists');
+    }
+
     return this.performerService.createPerformer(dto);
   }
 

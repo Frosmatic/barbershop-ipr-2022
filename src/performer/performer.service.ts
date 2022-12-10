@@ -25,4 +25,8 @@ export class PerformerService {
   async getPerformerById(id: string): Promise<Performer> {
     return this.performerRepository.findOne({ id });
   }
+
+  async getPerformerByEmail(email: string): Promise<Performer> {
+    return this.performerRepository.findOne({ email });
+  }
 }

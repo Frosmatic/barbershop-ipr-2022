@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
@@ -25,6 +26,7 @@ import { PerformerService } from '../performer/performer.service';
 import { ActivityService } from '../activity/activity.service';
 import { UserService } from '../user/user.service';
 import { DateTime } from 'luxon';
+import { AvailableAppointmentsDto } from './dto/available-appointments.dto';
 
 @ApiTags('Appointments')
 @UseGuards(JwtGuard, RolesGuard)
@@ -38,7 +40,7 @@ export class AppointmentController {
     private readonly userService: UserService,
   ) {}
 
-  // @HasRoles(Role.User)
+  @HasRoles(Role.User)
   @Post('')
   @ApiCreatedResponse({ type: Appointment })
   async bookAppointment(@Body() dto: BookAppointmentDto, @GetUser() user) {
@@ -52,6 +54,22 @@ export class AppointmentController {
 
     if (!performer || !activity) {
       throw new BadRequestException('Invalid performer or activity');
+    }
+
+    const availableTimeSlots =
+      await this.appointmentService.getAvailableAppointmentsByPerformer(
+        payload.performerId,
+        payload.date,
+      );
+
+    if (!availableTimeSlots.length) {
+      throw new BadRequestException('No available time slots');
+    }
+
+    if (
+      !availableTimeSlots.some((slot) => slot.startTime === payload.startTime)
+    ) {
+      throw new BadRequestException('Time slot is not available');
     }
 
     payload.endTime = DateTime.fromISO(payload.startTime)
@@ -90,5 +108,15 @@ export class AppointmentController {
   @ApiOkResponse({ type: Appointment })
   cancelAppointment(@Param('id') id: string) {
     return this.appointmentService.cancelAppointment(id);
+  }
+
+  @HasRoles(Role.User)
+  @Get('/available')
+  @ApiOkResponse({ type: [Appointment] })
+  async getAvailableAppointments(@Query() query: AvailableAppointmentsDto) {
+    return this.appointmentService.getAvailableAppointmentsByPerformer(
+      query.performerId,
+      query.date,
+    );
   }
 }
