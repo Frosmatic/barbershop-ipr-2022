@@ -39,33 +39,18 @@ export class AppointmentService {
     return this.appointmentRepository.find({ startTime });
   }
 
-  async checkAppointmentTimeAvailability(
-    startTime: Date,
-    endTime: Date,
-    performerId: string,
-  ): Promise<boolean> {
-    const appointments = await this.appointmentRepository.find({
-      startTime: { $gte: startTime },
-      endTime: { $lte: endTime },
-      'performer.id': performerId,
-    });
-
-    if (appointments.length) {
-      throw new BadRequestException('Time slot is not available');
-    }
-
-    return true;
-  }
-
   async getBookedTimeSlots(
     performerId: string,
     date: Date,
   ): Promise<{ startTime; endTime }[]> {
     const timeslots = [];
 
+    const start = DateTime.fromJSDate(date).startOf('day').toISO();
+    const end = DateTime.fromJSDate(date).endOf('day').toISO();
+
     const appointments = await this.appointmentRepository.find({
       'performer.id': performerId,
-      date,
+      date: { $gte: start, $lt: end },
     });
 
     if (!appointments.length) {
@@ -108,6 +93,11 @@ export class AppointmentService {
       new Date(date),
       30,
     );
+
+    console.log({
+      bookedTimeSlots,
+      generatedTimeSlots,
+    });
 
     return generatedTimeSlots.filter((generatedTimeSlot) => {
       return !bookedTimeSlots.some(

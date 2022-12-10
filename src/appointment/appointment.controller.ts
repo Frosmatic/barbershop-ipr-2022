@@ -67,7 +67,7 @@ export class AppointmentController {
     }
 
     if (
-      !availableTimeSlots.some((slot) => slot.startTime === payload.startTime)
+      availableTimeSlots.some((slot) => slot.startTime === payload.startTime)
     ) {
       throw new BadRequestException('Time slot is not available');
     }
@@ -75,12 +75,6 @@ export class AppointmentController {
     payload.endTime = DateTime.fromISO(payload.startTime)
       .plus({ minutes: activity.executionTime })
       .toISO();
-
-    await this.appointmentService.checkAppointmentTimeAvailability(
-      new Date(payload.startTime),
-      new Date(payload.endTime),
-      performer.id,
-    );
 
     payload.performer = performer;
     payload.activity = activity;
