@@ -8,6 +8,7 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { ActivityModule } from './activity/activity.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './cron/cron.module';
+import { CommandModule } from 'nestjs-command';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CronModule } from './cron/cron.module';
     ActivityModule,
     ScheduleModule.forRoot(),
     CronModule,
+    CommandModule,
   ],
 })
 export class AppModule {}

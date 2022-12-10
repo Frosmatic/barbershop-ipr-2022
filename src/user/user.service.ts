@@ -21,13 +21,17 @@ export class UserService {
     return this.userRepository.find({});
   }
 
-  async createUser(email: string, password: string): Promise<User> {
+  async createUser(
+    email: string,
+    password: string,
+    isAdmin = false,
+  ): Promise<User> {
     const hash = await argon.hash(password);
 
     return this.userRepository.create({
       email,
       hash,
-      roles: [Role.User],
+      roles: isAdmin ? [Role.Admin] : [Role.User],
       id: randomUUID(),
     });
   }
