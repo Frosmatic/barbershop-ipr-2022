@@ -12,7 +12,7 @@ export class AdminSeed {
   })
   async create() {
     const user = await this.userService.createUser(
-      'admin@gmail.com',
+      'admin_test@gmail.com',
       'test',
       true,
     );
