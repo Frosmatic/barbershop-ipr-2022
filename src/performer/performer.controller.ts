@@ -31,8 +31,8 @@ export class PerformerController {
 
   @Post('')
   @ApiCreatedResponse({ type: Performer })
-  create(@Body() dto: CreatePerformerDto) {
-    const existingPerformer = this.performerService.getPerformerByEmail(
+  async create(@Body() dto: CreatePerformerDto) {
+    const existingPerformer = await this.performerService.getPerformerByEmail(
       dto.email,
     );
 
